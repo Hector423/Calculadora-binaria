@@ -1,21 +1,17 @@
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
+
 
 public class ventanaCalculadora extends JFrame {
 	public JTextField octets[] = new JTextField[4];
@@ -24,6 +20,7 @@ public class ventanaCalculadora extends JFrame {
 	public JTextField octetsXarxa[] = new JTextField[4];
 	public JTextField mascara = new JTextField(2);
 	public JTextField errors = new JTextField(20);
+	boolean tipoDE = false;
 
 	public ventanaCalculadora() {
 		
@@ -79,6 +76,7 @@ public class ventanaCalculadora extends JFrame {
 		panelErrors.add(errors);
 		panelErrors.setLayout(new FlowLayout());
 		
+		
 
 		Container cp = getContentPane();
 		cp.setLayout(new BorderLayout());
@@ -117,39 +115,49 @@ public class ventanaCalculadora extends JFrame {
 			int octet = 0;
 			int mascaraInt = 0;
 			boolean error = false;
-			Pattern pattern = Pattern.compile("[a-z]");
+			
+			Pattern pattern = Pattern.compile("[0-9]");
+			for (int i = 0; i < 4; i++) {
+				octetsBinari[i].setText("");
+				octetsMascara[i].setText("");
+				octetsXarxa[i].setText("");
+			}
 			for (int i = 0; i < 4; i++) {
 				Matcher matcher = pattern.matcher(octets[i].getText());
 				Matcher matcherMascara = pattern.matcher(mascara.getText());
 				boolean matchFound = matcher.find();
 				boolean matchFoundMascara = matcherMascara.find();
-				if(octets[i].getText().isEmpty() || mascara.getText().isEmpty()) {
+				if(octets[i].getText().isEmpty()) {
 					errors.setText("Error: Hi ha un camp buit");
 					error = true;
-				}else if(matchFound || matchFoundMascara){
-					errors.setText("Error: Hi ha text en algun dels camps");
+				}else if(!matchFound || !matchFoundMascara){
+					errors.setText("Error: Només es poden posar numeros");
 					error = true;
 
-				}else{
+				}else if(!error){
+					if(mascara.getText().isEmpty()){
+						trobarMascara();
+					}
 					octet = Integer.parseInt(octets[i].getText());
 					mascaraInt = Integer.parseInt(mascara.getText());
-				}
+				
 				if (octet > 255 || octet < 0) {
 					errors.setText("Error: l'ip escrita es incorrecte");
 					error = true;
 				}else if(mascaraInt > 32 || mascaraInt < 0) {
 					errors.setText("Error: la mascara es incorrecte");
-					
 					error = true;
 				}
 				}
-			
-	
-			if (error == false) {
+			}
+
+			if (!error) {
 				calcularBinari();
+			if(!tipoDE) {
 				calcularMascara();
 				calcularXarxa();
 				errors.setText("");
+			}
 			} else {
 				for (int i = 0; i < 4; i++) {
 					octetsBinari[i].setText("");
@@ -158,7 +166,24 @@ public class ventanaCalculadora extends JFrame {
 				}
 			}
 			error = false;
-
+		}
+		
+		public void trobarMascara() {
+			
+			int tipo = Integer.parseInt(octets[0].getText());
+			
+			if(tipo <= 127) {
+				mascara.setText("8");
+			}
+			if(tipo >= 128 && tipo <= 191) {
+				mascara.setText("16");
+			}else if(tipo >= 192 && tipo <= 223) {
+				mascara.setText("24");
+			}else if(tipo >= 224) {
+				mascara.setText("0");
+				tipoDE = true;
+			}
+			
 		}
 
 		
@@ -196,7 +221,6 @@ public class ventanaCalculadora extends JFrame {
 			int mascaraInt = Integer.parseInt(mascara.getText());
 			int cont = 0;
 			String total = "";
-			String octet = "";
 			String[] array = new String[8];
 
 			while (total.length() != mascaraInt) {
@@ -238,6 +262,6 @@ public class ventanaCalculadora extends JFrame {
 
 			}
 		}
-
+		
 	}
 }

@@ -26,6 +26,7 @@ public class ventanaCalculadora extends JFrame {
 	public JTextField errors = new JTextField(20);
 
 	public ventanaCalculadora() {
+		
 		super("Calculadora binaria");
 		setSize(900, 300);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
